@@ -16,21 +16,59 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-
 }
 
-model User{
-  id Int @id @default(autoincrement())
-  email String @unique
-  name String?
-  password String
-  telepnone String?
-  createdAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-  role Role @default(USER)
+/**
+ * model User{
+ * id Int @id @default(autoincrement())
+ * email String @unique
+ * name String?
+ * password String
+ * telepnone String?
+ * createdAt DateTime @default(now())
+ * updateAt DateTime @updatedAt
+ * role Role @default(USER)
+ * }
+ * enum Role{
+ * USER
+ * ADMIN
+ * }
+ */
+
+model Tenant {
+  id    Int    @id @default(autoincrement())
+  users User[]
 }
 
-enum Role{
-  USER
-  ADMIN
+model User {
+  id       Int      @id @default(autoincrement())
+  tenantId Int?
+  tenant   Tenant?  @relation(fields: [tenantId], references: [id])
+  profile  Profile?
+}
+
+model Profile {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Post {
+  id         Int            @id @default(autoincrement())
+  categories PostCategory[]
+}
+
+model Category {
+  id    Int            @id @default(autoincrement())
+  posts PostCategory[]
+}
+
+model PostCategory {
+  postId     Int
+  categoryId Int
+
+  post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([postId, categoryId])
 }
